@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_wake_word: ^0.0.38
+  speech_to_text: ^7.3.0
 
 dev_dependencies:
   flutter_test:

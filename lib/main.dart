@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +29,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _isMicEnabled = false;
+  final _speechToText = SpeechToText();
+  var _recognizedWords = '';
+  List<LocaleName> _locales = [];
+  bool _speechEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+    _getCorrectLocale();
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _getCorrectLocale() async {
+    _locales = await _speechToText.locales();
+  }
+
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onWordsRecognized);
+    setState(() {});
+  }
+
+  void _stopListening() async {
+    _recognizedWords = '';
+    await _speechToText.stop();
+    setState(() {});
+  }
+
+  void _onWordsRecognized(SpeechRecognitionResult result) {
+    setState(() {
+      _recognizedWords += ' ${result.recognizedWords}';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,23 +82,28 @@ class _MyHomePageState extends State<MyHomePage> {
             Center(
               child: Column(
                 children: [
+                  for (var locale in _locales)
+                    Text('${locale.localeId} - ${locale.name}'),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
                       padding: const EdgeInsets.all(50),
-                      backgroundColor: _isMicEnabled
+                      backgroundColor: _speechToText.isListening
                           ? ButtonTheme.of(context).colorScheme!.onPrimary
                           : ButtonTheme.of(context).colorScheme!.primary,
                     ),
-                    child: _isMicEnabled
+                    child: _speechToText.isListening
                         ? Icon(Icons.mic, size: 50, color: Colors.red)
-                        : Icon(Icons.mic_none, size: 50, color: Colors.white),
+                        : Icon(Icons.mic_off, size: 50, color: Colors.white),
                     onPressed: () {
                       setState(() {
-                        _isMicEnabled = !_isMicEnabled;
+                        _speechToText.isNotListening
+                            ? _startListening()
+                            : _stopListening();
                       });
                     },
                   ),
+                  Text(_speechEnabled ? _recognizedWords : 'Listening not available'),
                 ],
               ),
             ),

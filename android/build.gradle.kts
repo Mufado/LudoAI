@@ -2,6 +2,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("${project.projectDir}/libs") } // Plugin's local libs directory
+        maven { url = uri("${project(":flutter_wake_word").projectDir}/libs") }
+        maven { url = uri("${project(":flutter_wake_word").projectDir}/libs") }
+        maven {
+            url = uri("${project(":flutter_wake_word").projectDir}/libs")
+        }
+        mavenLocal()
     }
 }
 
